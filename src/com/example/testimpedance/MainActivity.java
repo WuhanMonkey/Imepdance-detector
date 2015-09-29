@@ -27,7 +27,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CompoundButton;
+import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.EditText;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -38,7 +41,7 @@ import java.lang.Math;
 public class MainActivity extends Activity {
 
 	int samplingRate = 44100;
-	float mono_frequency = 440;
+	float mono_frequency = 1000;
 	boolean mStop = true;
 	boolean recordStop = false;
 	MediaPlayer mPlay = null;
@@ -46,18 +49,24 @@ public class MainActivity extends Activity {
 	private static final int RECORDER_CHANNELS = AudioFormat.CHANNEL_IN_MONO;
 	private static final int RECORDER_AUDIO_ENCODING = AudioFormat.ENCODING_PCM_16BIT;
 	private AudioRecord recorder = null;
-	private double recordSamplingRate = 44100;
 	private Thread recordingThread = null;
 	private boolean isRecording = false;
-	private int max =0;
+	private double max =0;
+	private double ohm = 0;
+	private double ohm_coord=0;
+	private double ohm_offset=0;
+	private float stereo_frequency =0;
 	int BufferElements2Rec = 1024; // want to play 2048 (2K) since 2 bytes we use only 1024
 	int BytesPerElement = 2; // 2 bytes in 16bit format
 	private Writer writer;
 	short sData[] = new short[BufferElements2Rec];
+	short sData_lowpass[] = new short[BufferElements2Rec];
 	int bufferSize =0;
 	float a30, b30, a40, b40, a50, b50; //30k, 40k, 50k coefficient 
 	float output30, output40, output50;
 	private AudioManager m_amAudioManager;
+	private Switch mySwitch;
+	static final short ALPHA = (short) 0.25f; // if ALPHA = 1 OR 0, no filter applies.
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -65,7 +74,29 @@ public class MainActivity extends Activity {
 		setContentView(R.layout.activity_main);
 		bufferSize = AudioRecord.getMinBufferSize(RECORDER_SAMPLERATE,
 	            RECORDER_CHANNELS, RECORDER_AUDIO_ENCODING); 
-	
+		mySwitch = (Switch) findViewById(R.id.mySwitch);
+		
+		  //set the switch to ON 
+		  mySwitch.setChecked(true);
+		  mySwitch.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+			    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+			    	  if(mySwitch.isChecked()){
+						  Log.i("here","nexus");
+						  ohm_coord = 2968750;
+						  ohm_offset = 2850;
+					  }
+					  else {
+						  Log.i("here", "HTC");
+						  ohm_coord = 76819995;
+						  ohm_offset = 1969;
+					  }   // do something, the isChecked will be
+			        // true if the switch is in the On position
+			    }
+			});
+		   
+		  //check the current state before we display the screen
+		
+		 
 	}
 
 	@Override
@@ -87,7 +118,7 @@ public class MainActivity extends Activity {
 		return super.onOptionsItemSelected(item);
 	}
 	//mono sine sensing
-	public void start(View view) {
+/**	public void start(View view) {
 
 	      new Thread( new Runnable( ) 
 	      {
@@ -161,24 +192,23 @@ public class MainActivity extends Activity {
 		});
 	}
 	
-
+**/
 	public void start_stereo(View view){
 		EditText offsetText = (EditText) findViewById(R.id.offset);
 		String offset = offsetText.getText().toString();
-		final double offset_lf = Double.valueOf(offset);
-		
-		
-		  
-	
-		
-		
-		
+		final byte offset_lf = Byte.valueOf(offset);
+		EditText freqText = (EditText) findViewById(R.id.input_freq);
+		String freq = freqText.getText().toString();
+		stereo_frequency = Float.valueOf(freq);
+		//stereo_frequency = stereo_frequency/2;
+		//Log.d("testimpedance", "offset is : " + Byte.toString(offset_lf));
+		//Log.d("testimpedance", "freq is : " + Float.toString(stereo_frequency));
 		new Thread( new Runnable( ) 
 	      {
 	         public void run( )
 	         {        		
 	            mStop = true;
-	            float increment = (float)(2*Math.PI) * mono_frequency / samplingRate; // angular increment for each sample
+	            float increment = (float)(2*Math.PI) * stereo_frequency / samplingRate; // angular increment for each sample
 	            float angle = 0;
 	            //AndroidAudioDevice device = new AndroidAudioDevice( );
 	            AudioDeviceStereo device = new AudioDeviceStereo();
@@ -218,22 +248,39 @@ public class MainActivity extends Activity {
 	            //writeAmplitudeListToFile(sData);
 	            //need to make a toast here for the largest amplitude we get.
 	            max = 0;
-	            for(int i =0; i< sData.length; i++){
-	            	if(max < Math.abs((int)sData[i]))
-	            		max = Math.abs((int)sData[i]);            		
+	            //low pass filter
+	            sData_lowpass = noisy_filter(sData,sData_lowpass);
+	            
+	            for(int i =0; i< sData_lowpass.length; i++){
+	            	if(max < Math.abs((int)sData_lowpass[i]))
+	            		max = Math.abs((int)sData_lowpass[i]);            		
 	            }
 	            //put the fit calculation here
-	            
-	            
+	            ohm = ohm_coord/max - ohm_offset;
+	            //ohm = 2968750/max-2750;
+	            //ohm = 78656150/max-1923;
 	            runOnUiThread(new Runnable() {
 	                public void run() {
-	            Toast.makeText(getApplicationContext(), "Max ampl is "+max, Toast.LENGTH_SHORT).show();
+	            //Toast.makeText(getApplicationContext(), "Estimated resistance is "+ (int)ohm, Toast.LENGTH_SHORT).show();
+	            Toast.makeText(getApplicationContext(), "Estimated Resistance is "+ (int)ohm + "ohm" + "Estimated ADC is " + (int)max, Toast.LENGTH_SHORT).show();
+
 	                }
 	            });
 	         }         
 	      } ).start();
 	
 		
+	}
+	
+	protected short[] noisy_filter( short[] input, short[] output ) {
+		output[0]=input[0];
+		output[1]=input[1];
+		output[2]=input[2];
+
+		for(int i = 3; i<input.length-3; i++){
+			output[i] = (short) ((input[i]+input[i-1]+input[i-2]+input[i-3]+input[i+1]+input[i+2]+input[i+3])/7);
+		}
+	    return output;
 	}
 	
 	public void stop_stereo (View view){
@@ -259,7 +306,7 @@ public class MainActivity extends Activity {
 		});
 	}
 	
-	public void Start_wav (View view){
+/**	public void Start_wav (View view){
 		//TODO Generate wav file programatically, user can adjust the freq and amplitude if needed.
 		mPlay = MediaPlayer.create(this, R.raw.stereo);
 		 StartRecord();
@@ -309,12 +356,12 @@ public class MainActivity extends Activity {
 		  stopRecording();            
           writeAmplitudeListToFile(sData);
 	}
-	
+**/	
 	public void StartRecord (){
 		
 		recorder = new AudioRecord(MediaRecorder.AudioSource.MIC,
 	            RECORDER_SAMPLERATE, RECORDER_CHANNELS,
-	            RECORDER_AUDIO_ENCODING, bufferSize);
+	            RECORDER_AUDIO_ENCODING,  bufferSize);
 		
 		recorder.startRecording();
 	    isRecording = true;
