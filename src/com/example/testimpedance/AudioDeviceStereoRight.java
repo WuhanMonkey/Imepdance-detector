@@ -4,13 +4,13 @@ import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
 
-public class AudioDeviceStereo {
+public class AudioDeviceStereoRight {
 	AudioTrack track;
 	double amp_offset;
 	   byte[] buffer = new byte[2048];
 	
 	
-	   public AudioDeviceStereo( )
+	   public AudioDeviceStereoRight( )
 	   {
 	      int minSize =AudioTrack.getMinBufferSize( 44100, AudioFormat.CHANNEL_OUT_STEREO, AudioFormat.ENCODING_PCM_16BIT );        
 	      track = new AudioTrack( AudioManager.STREAM_MUSIC, 44100, 
@@ -33,10 +33,10 @@ public class AudioDeviceStereo {
 	         buffer = new byte[samples.length];
 	      }
 	      for(int i = 0, j=0; j< samples.length;i+=4){
-    	  buffer[i] = (byte)(samples[j]*(amp_offset));
-    	  buffer[i+1] = (byte)(samples[j+1]*(amp_offset));
-    	  buffer[i+2]= (byte)(samples[j]*(0));
-    	  buffer[i+3]= (byte)(samples[j+1]*(0));
+    	  buffer[i] = (byte)(samples[j]*(0));
+    	  buffer[i+1] = (byte)(samples[j+1]*(0));
+    	  buffer[i+2]= (byte)(samples[j]*(-amp_offset));
+    	  buffer[i+3]= (byte)(samples[j+1]*(-amp_offset));
     	  j+=2;
 	    	  
       }

@@ -36,27 +36,6 @@
         android:text="Ready"
         android:textAppearance="?android:attr/textAppearanceLarge" />
 
-    <Button
-        android:id="@+id/inner_start_stereo"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/textView2"
-        android:layout_alignBottom="@+id/textView2"
-        android:layout_toRightOf="@+id/textView4"
-        android:onClick="start_stereo"
-        android:text="Start" />
-
-    <Button
-        android:id="@+id/inner_stop_stereo"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/inner_start_stereo"
-        android:layout_alignBottom="@+id/inner_start_stereo"
-        android:layout_alignLeft="@+id/inner_start_stereo"
-        android:onClick="stop_stereo"
-        android:text="Stop"
-        android:visibility="invisible" />
-
     <EditText
         android:id="@+id/offset"
         android:layout_width="wrap_content"
@@ -66,6 +45,7 @@
         android:layout_marginTop="85dp"
         android:ems="10"
         android:inputType="numberDecimal"
+        android:text="30"
         />
 
    <EditText
@@ -77,6 +57,7 @@
         android:layout_marginTop="29dp"
         android:ems="10"
         android:inputType="numberDecimal"
+        android:text="1000"
          />
 
    
@@ -107,5 +88,47 @@
         android:layout_below="@+id/input_freq"
         android:layout_marginTop="15dp"
         android:text="ON = Nexus OFF = HTC" />
+
+    <Button
+        android:id="@+id/inner_start_stereo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/textView2"
+        android:layout_alignBottom="@+id/textView2"
+        android:layout_alignRight="@+id/mySwitch"
+        android:onClick="start_stereo"
+        android:text="Start" />
+
+    <Button
+        android:id="@+id/calibration"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/textView4"
+        android:layout_below="@+id/inner_start_stereo"
+        android:onClick="leftCalibration"
+        android:text="Left"
+        android:visibility="visible" />
+
+    <Button
+        android:id="@+id/inner_stop_stereo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/inner_start_stereo"
+        android:layout_alignBottom="@+id/inner_start_stereo"
+        android:layout_alignLeft="@+id/inner_start_stereo"
+        android:onClick="stop_stereo"
+        android:text="Stop"
+        android:visibility="invisible" />
+
+    <Button
+        android:id="@+id/rightBtn"
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/textView2"
+        android:layout_marginLeft="19dp"
+        android:layout_toRightOf="@+id/calibration"
+        android:onClick="rightCalibration"      
+        android:text="Right" />
 
 </RelativeLayout>
