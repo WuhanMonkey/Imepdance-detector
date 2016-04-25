@@ -8,127 +8,94 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.example.testimpedance.MainActivity" >
 
-    <TextView
-        android:id="@+id/status_details"
+    <Button
+        android:id="@+id/inner_start_stereo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_below="@+id/status_content"
-        android:text="Press Start to begin collecting data. Make sure the sensor is connected to the headset interface."
-        android:textAppearance="?android:attr/textAppearanceSmall" />
-
-    <TextView
-        android:id="@+id/textView2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/status_details"
-        android:layout_marginTop="42dp"
-        android:text="Stereo_Sine:"
-        android:textAppearance="?android:attr/textAppearanceLarge" />
+        android:layout_alignLeft="@+id/calibrate"
+        android:layout_alignRight="@+id/calibrate"
+        android:layout_below="@+id/calibrate"
+        android:onClick="start_stereo"
+        android:text="Test" />
 
     <TextView
         android:id="@+id/status_content"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/status_details"
         android:layout_alignParentTop="true"
-        android:layout_marginTop="16dp"
-        android:text="Ready"
+        android:layout_marginTop="27dp"
+        android:text="Calibrate"
         android:textAppearance="?android:attr/textAppearanceLarge" />
+
+    <EditText
+        android:id="@+id/input_freq"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/offset"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="21dp"
+        android:ems="10"
+        android:inputType="numberDecimal"
+        android:text="1000" />
+
+    <TextView
+        android:id="@+id/textView4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/input_freq"
+        android:layout_alignLeft="@+id/offset"
+        android:layout_marginBottom="86dp"
+        android:text="Input amp value (range 0~120):" />
 
     <EditText
         android:id="@+id/offset"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/textView2"
-        android:layout_below="@+id/inner_start_stereo"
-        android:layout_marginTop="85dp"
+        android:layout_alignTop="@+id/textView4"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="27dp"
         android:ems="10"
         android:inputType="numberDecimal"
-        android:text="30"
-        />
-
-   <EditText
-        android:id="@+id/input_freq"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_below="@+id/offset"
-        android:layout_marginTop="29dp"
-        android:ems="10"
-        android:inputType="numberDecimal"
-        android:text="1000"
-         />
-
-   
-
-    <TextView
-        android:id="@+id/textView1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/input_freq"
-        android:layout_below="@+id/offset"
-        android:layout_marginTop="12dp"
-        android:text="Input Frequency:" />
-    
-    <TextView
-        android:id="@+id/textView4"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/offset"
-        android:layout_alignLeft="@+id/offset"
-        android:layout_marginBottom="42dp"
-        android:text="Input amp value (range 0~120):" />
-
-    <Switch
-        android:id="@+id/mySwitch"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/input_freq"
-        android:layout_below="@+id/input_freq"
-        android:layout_marginTop="15dp"
-        android:text="ON = Nexus OFF = HTC" />
+        android:text="30" />
 
     <Button
-        android:id="@+id/inner_start_stereo"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/textView2"
-        android:layout_alignBottom="@+id/textView2"
-        android:layout_alignRight="@+id/mySwitch"
-        android:onClick="start_stereo"
-        android:text="Start" />
-
-    <Button
-        android:id="@+id/calibration"
+        android:id="@+id/calibrate"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignLeft="@+id/textView4"
-        android:layout_below="@+id/inner_start_stereo"
-        android:onClick="leftCalibration"
-        android:text="Left"
-        android:visibility="visible" />
+        android:layout_alignRight="@+id/textView4"
+        android:layout_centerVertical="true"
+        android:onClick="calibrate"
+        android:text="Calibrate" />
+
+    <TextView
+        android:id="@+id/status_details"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/calibrate"
+        android:layout_alignLeft="@+id/status_content"
+        android:layout_below="@+id/status_content"
+        android:layout_marginTop="22dp"
+        android:text="Press Calibrate button to first calibrate the left channel. Make sure the sensor is connected to the headset interface."
+        android:textAppearance="?android:attr/textAppearanceSmall" />
 
     <Button
         android:id="@+id/inner_stop_stereo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/inner_start_stereo"
-        android:layout_alignBottom="@+id/inner_start_stereo"
         android:layout_alignLeft="@+id/inner_start_stereo"
+        android:layout_alignRight="@+id/inner_start_stereo"
+        android:layout_below="@+id/calibrate"
         android:onClick="stop_stereo"
         android:text="Stop"
         android:visibility="invisible" />
 
-    <Button
-        android:id="@+id/rightBtn"
-        style="?android:attr/buttonStyleSmall"
+    <TextView
+        android:id="@+id/textView1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/textView2"
-        android:layout_marginLeft="19dp"
-        android:layout_toRightOf="@+id/calibration"
-        android:onClick="rightCalibration"      
-        android:text="Right" />
+        android:layout_above="@+id/input_freq"
+        android:layout_alignLeft="@+id/input_freq"
+        android:text="Input Frequency:" />
 
 </RelativeLayout>

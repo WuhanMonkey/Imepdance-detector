@@ -70,7 +70,7 @@ public class MainActivity extends Activity {
 	float a30, b30, a40, b40, a50, b50; //30k, 40k, 50k coefficient 
 	float output30, output40, output50;
 	private AudioManager m_amAudioManager;
-	private Switch mySwitch;
+	//private Switch mySwitch;
 	private static final String MyPREFERENCES = "Calibration" ;
 	static final short ALPHA = (short) 0.25f; // if ALPHA = 1 OR 0, no filter applies.
 	SharedPreferences sharedpreferences;
@@ -82,7 +82,55 @@ public class MainActivity extends Activity {
 		
 		bufferSize = AudioRecord.getMinBufferSize(RECORDER_SAMPLERATE,
 	            RECORDER_CHANNELS, RECORDER_AUDIO_ENCODING); 
-		mySwitch = (Switch) findViewById(R.id.mySwitch);
+		
+		sharedpreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
+		
+		
+		float left_max = sharedpreferences.getFloat("leftMax", 0.0f);
+		float right_max = sharedpreferences.getFloat("rightMax", 0.0f);
+
+
+		
+		if(left_max != 0.0f && right_max != 0.0f){
+			runOnUiThread(new Runnable() {
+                public void run() {
+                	TextView StatusContent = (TextView) findViewById(R.id.status_content);
+		    		TextView StatusDetails = (TextView) findViewById(R.id.status_details);
+		    		StatusContent.setText("Ready");
+		    		StatusDetails
+		    				.setText("Calibration done. Please press Test button to start sensing or press Calibrate button to calibrate again");	 
+
+                }
+            });		
+		}
+		
+		else if(left_max == 0.0f){
+			runOnUiThread(new Runnable() {
+                public void run() {
+                	TextView StatusContent = (TextView) findViewById(R.id.status_content);
+		    		TextView StatusDetails = (TextView) findViewById(R.id.status_details);
+		    		StatusContent.setText("Calibrate Left");
+		    		StatusDetails
+		    				.setText("Press Calibrate button to first calibrate the left channel. Make sure the sensor is connected to the headset interface.");	 
+
+                }
+            });		
+		}
+		
+		else if(left_max !=0.0f&&right_max ==0.0f){
+			runOnUiThread(new Runnable() {
+                public void run() {
+                	TextView StatusContent = (TextView) findViewById(R.id.status_content);
+		    		TextView StatusDetails = (TextView) findViewById(R.id.status_details);
+		    		StatusContent.setText("Calibrate Right");
+		    		StatusDetails
+		    				.setText("Press Calibrate button to calibrate the right channel. Make sure the sensor is connected to the headset interface.");	 
+
+                }
+            });		
+		}
+		
+		/**mySwitch = (Switch) findViewById(R.id.mySwitch);
 		
 		  //set the switch to ON 
 		  mySwitch.setChecked(true);
@@ -100,7 +148,7 @@ public class MainActivity extends Activity {
 					  }   // do something, the isChecked will be
 			        // true if the switch is in the On position
 			    }
-			});
+			});**/
 		   
 		  //check the current state before we display the screen
 		
@@ -125,8 +173,43 @@ public class MainActivity extends Activity {
 		}
 		return super.onOptionsItemSelected(item);
 	}
-	
-	
+	public void calibrate(View view){
+		TextView StatusContent = (TextView) findViewById(R.id.status_content);
+		String status = StatusContent.getText().toString();
+		if(status.equalsIgnoreCase("calibrate left")){
+			leftCalibration(view);
+			runOnUiThread(new Runnable() {
+				public void run() {					
+					Toast.makeText(getApplicationContext(), "Calibrating the left channel",  Toast.LENGTH_LONG).show();
+
+				}
+			});
+		}
+		
+		else if(status.equalsIgnoreCase("calibrate right")){
+			rightCalibration(view);
+			runOnUiThread(new Runnable() {
+				public void run() {					
+					Toast.makeText(getApplicationContext(), "Calibrating the right channel",  Toast.LENGTH_LONG).show();
+
+				}
+			});
+		}
+		
+		
+		else if(status.equalsIgnoreCase("ready")){
+			runOnUiThread(new Runnable() {
+				public void run() {			
+					Toast.makeText(getApplicationContext(), "You may now calibrate again",  Toast.LENGTH_LONG).show();
+			 		TextView StatusContent = (TextView) findViewById(R.id.status_content);
+		    		TextView StatusDetails = (TextView) findViewById(R.id.status_details);
+		    		StatusContent.setText("Calibrate Left");
+		    		StatusDetails
+		    				.setText("Press Calibrate button to first calibrate the left channel. Make sure the sensor is connected to the headset interface.");	 
+				}
+			});
+		}
+	}
 
 	
 
@@ -147,7 +230,7 @@ public class MainActivity extends Activity {
 			runOnUiThread(new Runnable() {
                 public void run() {
             //Toast.makeText(getApplicationContext(), "Estimated resistance is "+ (int)ohm, Toast.LENGTH_SHORT).show();
-            Toast.makeText(getApplicationContext(), "Please calibrate both channels first.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), "Please calibrate the channels first.", Toast.LENGTH_SHORT).show();
 
                 }
             });
@@ -320,6 +403,11 @@ public class MainActivity extends Activity {
 	                public void run() {
 	            //Toast.makeText(getApplicationContext(), "Estimated resistance is "+ (int)ohm, Toast.LENGTH_SHORT).show();
 	            Toast.makeText(getApplicationContext(), "Calibration done. Left max is: " + left_max,  Toast.LENGTH_LONG).show();
+	            TextView StatusContent = (TextView) findViewById(R.id.status_content);
+	    		TextView StatusDetails = (TextView) findViewById(R.id.status_details);
+	    		StatusContent.setText("Calibrate Right");
+	    		StatusDetails
+	    				.setText("Press Calibrate button to calibrate the right channel. Make sure the sensor is connected to the headset interface.");	 
 	                }
 	            });
 	         }         
@@ -389,6 +477,15 @@ public class MainActivity extends Activity {
 	                public void run() {
 	            //Toast.makeText(getApplicationContext(), "Estimated resistance is "+ (int)ohm, Toast.LENGTH_SHORT).show();
 	            Toast.makeText(getApplicationContext(), "Calibration done. right max is: " + right_max, Toast.LENGTH_LONG).show();
+	            TextView StatusContent = (TextView) findViewById(R.id.status_content);
+	    		TextView StatusDetails = (TextView) findViewById(R.id.status_details);
+	    		StatusContent.setText("Ready");
+	    		StatusDetails
+	    				.setText("Calibration done. Please press Test button to start sensing or press Calibrate button to calibrate again");	 
+	            
+	            
+	            
+	            
 	                }
 	            });
 	         }         
@@ -410,7 +507,7 @@ public class MainActivity extends Activity {
 	    return output;
 	}
 	
-	public void stop_stereo (View view){
+	public void stop_stereo(View view){
 		
 		mStop = false;
 		
@@ -426,9 +523,9 @@ public class MainActivity extends Activity {
 				
 				TextView StatusContent = (TextView) findViewById(R.id.status_content);
 	    		TextView StatusDetails = (TextView) findViewById(R.id.status_details);
-	    		StatusContent.setText("Start");
+	    		StatusContent.setText("Ready");
 	    		StatusDetails
-	    				.setText("Press Start to begin collecting data. Make sure the sensor is connected to the headset interface.");	
+	    				.setText("Calibration done. Please press Test button to start sensing or press Calibrate button to calibrate again");	
 			}
 		});
 	}
@@ -439,7 +536,7 @@ public class MainActivity extends Activity {
 
 	
 
-	public void StartRecord (){
+	public void StartRecord(){
 		
 		recorder = new AudioRecord(MediaRecorder.AudioSource.MIC,
 	            RECORDER_SAMPLERATE, RECORDER_CHANNELS,
