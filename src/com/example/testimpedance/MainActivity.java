@@ -16,6 +16,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioRecord;
@@ -60,6 +61,7 @@ public class MainActivity extends Activity {
 	private double ohm_offset=0;
 	private double Rint =0;
 	private double K=0;
+	private boolean test_resistance_flag = true;
 	private float stereo_frequency =0;
 	int BufferElements2Rec = 1024; // want to play 2048 (2K) since 2 bytes we use only 1024
 	int BytesPerElement = 2; // 2 bytes in 16bit format
@@ -210,7 +212,17 @@ public class MainActivity extends Activity {
 			});
 		}
 	}
-
+    
+	
+	public void test_resistance(View view){
+		test_resistance_flag = true;
+		start_stereo(view);
+	}
+	
+	public void test_temperature(View view){
+		test_resistance_flag = false;
+		start_stereo(view);
+	}
 	
 
 	public void start_stereo(View view){
@@ -223,9 +235,7 @@ public class MainActivity extends Activity {
 		sharedpreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
 		float left_max = sharedpreferences.getFloat("leftMax", 0.0f);
 		float right_max = sharedpreferences.getFloat("rightMax", 0.0f);
-
-
-		
+	
 		if(left_max == 0.0f || right_max == 0.0f){
 			runOnUiThread(new Runnable() {
                 public void run() {
@@ -235,8 +245,7 @@ public class MainActivity extends Activity {
                 }
             });
 			return;
-		}
-		
+		}		
 		Rint = (10000*right_max - 2000*left_max)/(left_max-right_max);
         K = (right_max*Rint + 10000*right_max)/Rint;
         runOnUiThread(new Runnable() {
@@ -265,12 +274,20 @@ public class MainActivity extends Activity {
 	            
 	            runOnUiThread(new Runnable() {
 					public void run() {
-
-						Button handle = (Button) findViewById(R.id.inner_start_stereo);
-
+						Button handle = null;
+						if(test_resistance_flag){
+						handle = (Button) findViewById(R.id.inner_start_stereo);
+						}
+						else{
+							handle = (Button) findViewById(R.id.inner_start_stereo2);	
+						}
 						handle.setVisibility(View.INVISIBLE);
-
+						if(test_resistance_flag){
 						handle = (Button) findViewById(R.id.inner_stop_stereo);
+						}
+						else{
+							handle = (Button) findViewById(R.id.inner_stop_stereo2);	
+						}
 						handle.setVisibility(View.VISIBLE);
 						
 				 		TextView StatusContent = (TextView) findViewById(R.id.status_content);
@@ -325,6 +342,23 @@ public class MainActivity extends Activity {
 	                }
 	            }); 
 	            
+	            //Visualize the estimated value depends on test_resistance_flag
+	    		TextView resistance_result = (TextView) findViewById(R.id.resistance_result);
+	    		TextView temp_result = (TextView) findViewById(R.id.temp_result);
+
+	    		
+	    		if(test_resistance_flag){
+	    			resistance_result.setText("Estimated resistance is: ");
+	    			resistance_result.setTextColor(Color.CYAN);
+	    			temp_result.setTextColor(Color.BLACK);
+	    			//TO ADD formula to calculate resistance.
+	    		}
+	    		else{
+	    			temp_result.setText("Estimated temperature is: ");	
+	    			temp_result.setTextColor(Color.CYAN);
+	    			resistance_result.setTextColor(Color.BLACK);
+	    			//TO ADD formula to calculate temperature.
+	    		}
 	            
 	            
 	         }         
@@ -513,12 +547,20 @@ public class MainActivity extends Activity {
 		
 		runOnUiThread(new Runnable() {
 			public void run() {
-
-				Button handle = (Button) findViewById(R.id.inner_start_stereo);
-
+				Button handle = null;
+				if(test_resistance_flag){
+				handle = (Button) findViewById(R.id.inner_start_stereo);
+				}
+				else{
+				handle = (Button) findViewById(R.id.inner_start_stereo2);	
+				}
 				handle.setVisibility(View.VISIBLE);
-
+				if(test_resistance_flag){
 				handle = (Button) findViewById(R.id.inner_stop_stereo);
+				}
+				else{
+					handle = (Button) findViewById(R.id.inner_stop_stereo2);	
+				}
 				handle.setVisibility(View.INVISIBLE);
 				
 				TextView StatusContent = (TextView) findViewById(R.id.status_content);

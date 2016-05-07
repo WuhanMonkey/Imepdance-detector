@@ -246,7 +246,7 @@ int id action_context_bar 0x7f0a001d
 int id action_menu_divider 0x7f0a0002
 int id action_menu_presenter 0x7f0a0003
 int id action_mode_close_button 0x7f0a0024
-int id action_settings 0x7f0a0045
+int id action_settings 0x7f0a0049
 int id activity_chooser_view_content 0x7f0a0025
 int id always 0x7f0a000f
 int id beginning 0x7f0a0016
@@ -267,7 +267,9 @@ int id icon 0x7f0a002a
 int id ifRoom 0x7f0a0011
 int id image 0x7f0a0027
 int id inner_start_stereo 0x7f0a003c
+int id inner_start_stereo2 0x7f0a0045
 int id inner_stop_stereo 0x7f0a0043
+int id inner_stop_stereo2 0x7f0a0046
 int id input_freq 0x7f0a003f
 int id listMode 0x7f0a0006
 int id list_item 0x7f0a0029
@@ -279,6 +281,7 @@ int id offset 0x7f0a0040
 int id progress_circular 0x7f0a0004
 int id progress_horizontal 0x7f0a0005
 int id radio 0x7f0a002f
+int id resistance_result 0x7f0a0047
 int id search_badge 0x7f0a0032
 int id search_bar 0x7f0a0031
 int id search_button 0x7f0a0033
@@ -298,6 +301,7 @@ int id status_content 0x7f0a003e
 int id status_details 0x7f0a0042
 int id submit_area 0x7f0a0039
 int id tabMode 0x7f0a0008
+int id temp_result 0x7f0a0048
 int id textView1 0x7f0a0044
 int id textView4 0x7f0a0041
 int id title 0x7f0a002b
