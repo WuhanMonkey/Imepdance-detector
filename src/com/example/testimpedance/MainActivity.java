@@ -248,8 +248,10 @@ public class MainActivity extends Activity {
             });
 			return;
 		}		
-		Rint = (10000*right_max - 2000*left_max)/(left_max-right_max);
-        K = (right_max*Rint + 10000*right_max)/Rint;
+		//Rint = (10000*right_max - 2000*left_max)/(left_max-right_max);
+        //K = (right_max*Rint + 10000*right_max)/Rint;
+		Rint = (30000*right_max - 16200*left_max)/(left_max-right_max);
+		K = (right_max*Rint + 30000*right_max)/Rint;
         runOnUiThread(new Runnable() {
             public void run() {
         //Toast.makeText(getApplicationContext(), "Estimated resistance is "+ (int)ohm, Toast.LENGTH_SHORT).show();
@@ -335,33 +337,54 @@ public class MainActivity extends Activity {
 	            max/=counter;
 	            //put the fit calculation here
 	            
-	            final double Rx = Rint*K/max - Rint - 2000;
-	            
-	            runOnUiThread(new Runnable() {
-	                public void run() {
-	            Toast.makeText(getApplicationContext(), "Estimated resistance is "+ (int)Rx + " DAC: " + max, Toast.LENGTH_SHORT).show();
-	            
-	                }
-	            }); 
+//	            final double Rx = Rint*K/max - Rint - 2000;
+//
+//	            runOnUiThread(new Runnable() {
+//	                public void run() {
+//	            Toast.makeText(getApplicationContext(), "Estimated resistance is "+ (int)Rx + " DAC: " + max, Toast.LENGTH_SHORT).show();
+//
+//	                }
+//	            });
 	            
 	            //Visualize the estimated value depends on test_resistance_flag
-	    		TextView resistance_result = (TextView) findViewById(R.id.resistance_result);
-	    		TextView temp_result = (TextView) findViewById(R.id.temp_result);
+	    		final TextView resistance_result = (TextView) findViewById(R.id.resistance_result);
+	    		final TextView temp_result = (TextView) findViewById(R.id.temp_result);
 
 	    		
 	    		if(test_resistance_flag){
-	    			resistance_result.setText("Estimated resistance is: ");
-	    			resistance_result.setTextColor(Color.CYAN);
-	    			temp_result.setTextColor(Color.BLACK);
+					final double Rx = Rint*K/max - Rint - 15000;
+					runOnUiThread(new Runnable() {
+					     @Override
+					     public void run() {
+
+					//stuff that updates ui
+								resistance_result.setText("Estimated resistance is: " + (int)Rx + " ohm");
+				    			resistance_result.setTextColor(Color.RED);
+				    			temp_result.setTextColor(Color.BLACK);
+					    }
+					});
+
 	    			//TO ADD formula to calculate resistance.
-	    			write2CSV(true, "1");
+
+	    			write2CSV(true, Integer.toString((int)Rx) + " ohm");
 	    		}
 	    		else{
-	    			temp_result.setText("Estimated temperature is: ");	
-	    			temp_result.setTextColor(Color.CYAN);
-	    			resistance_result.setTextColor(Color.BLACK);
+					final double Tem = Rint*K/max - Rint - 15000;
+					final double Tem_c = -1/((Math.log(Tem/10000)/3430)-1/298)-273;
+					runOnUiThread(new Runnable() {
+					     @Override
+					     public void run() {
+
+					//stuff that updates ui
+				    			temp_result.setText("Estimated temperature is: "+ (int)Tem_c + " C");
+				    			temp_result.setTextColor(Color.RED);
+				    			resistance_result.setTextColor(Color.BLACK);
+					    }
+					});
+
+
 	    			//TO ADD formula to calculate temperature.
-	    			write2CSV(false, "2");
+	    			write2CSV(false, Integer.toString((int)Tem_c) + " C");
 	    		}
 	            
 	            
@@ -417,6 +440,13 @@ public class MainActivity extends Activity {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+			
+            runOnUiThread(new Runnable() {
+                public void run() {
+            Toast.makeText(getApplicationContext(), "Data written..",  Toast.LENGTH_SHORT).show();
+
+                }
+            });
 	}
 	
 	

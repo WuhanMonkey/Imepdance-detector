@@ -27,18 +27,6 @@
         android:text="Calibrate"
         android:textAppearance="?android:attr/textAppearanceLarge" />
 
-    <EditText
-        android:id="@+id/input_freq"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/offset"
-        android:layout_alignParentBottom="true"
-        android:layout_marginBottom="21dp"
-        android:ems="10"
-        android:inputType="numberDecimal"
-        android:text="2000" 
-        android:visibility="invisible"/>
-
     <TextView
         android:id="@+id/textView4"
         android:layout_width="wrap_content"
@@ -125,21 +113,34 @@
          android:visibility="invisible"/>
 
     <TextView
-        android:id="@+id/resistance_result"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/textView1"
-        android:layout_alignLeft="@+id/offset"
-        android:text="" 
-        android:textAppearance="?android:attr/textAppearanceMedium" />
-
-    <TextView
         android:id="@+id/temp_result"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignBottom="@+id/input_freq"
         android:layout_alignLeft="@+id/input_freq"
-        android:text=""
+        android:text="Estimated temperature is:"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <EditText
+        android:id="@+id/input_freq"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignRight="@+id/inner_start_stereo2"
+        android:layout_marginBottom="23dp"
+        android:layout_marginRight="14dp"
+        android:ems="10"
+        android:inputType="numberDecimal"
+        android:text="2000"
+        android:visibility="invisible" />
+
+    <TextView
+        android:id="@+id/resistance_result"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/textView1"
+        android:layout_alignLeft="@+id/textView1"
+        android:text="Estimated resistance is:"
         android:textAppearance="?android:attr/textAppearanceMedium" />
 
 </RelativeLayout>
