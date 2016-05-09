@@ -38,6 +38,8 @@ import android.widget.Toast;
 
 import java.lang.Math;
 
+import com.opencsv.CSVWriter;
+
 
 
 public class MainActivity extends Activity {
@@ -352,12 +354,14 @@ public class MainActivity extends Activity {
 	    			resistance_result.setTextColor(Color.CYAN);
 	    			temp_result.setTextColor(Color.BLACK);
 	    			//TO ADD formula to calculate resistance.
+	    			write2CSV(true, "1");
 	    		}
 	    		else{
 	    			temp_result.setText("Estimated temperature is: ");	
 	    			temp_result.setTextColor(Color.CYAN);
 	    			resistance_result.setTextColor(Color.BLACK);
 	    			//TO ADD formula to calculate temperature.
+	    			write2CSV(false, "2");
 	    		}
 	            
 	            
@@ -368,6 +372,53 @@ public class MainActivity extends Activity {
 		
 		
 	}
+	
+	public void write2CSV(boolean test_resistance, String val){
+			String baseDir = android.os.Environment.getExternalStorageDirectory().getAbsolutePath();
+			String fileName = "Measured_data.csv";
+			String filePath = baseDir + File.separator + fileName;
+			File f = new File(filePath );
+			CSVWriter writer = null; 
+			FileWriter mFileWriter = null;
+			// File exist
+			if(f.exists() && !f.isDirectory()){
+				try {
+					mFileWriter = new FileWriter(filePath , true);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				writer = new CSVWriter(mFileWriter);
+			}
+			else {
+				try {
+					writer = new CSVWriter(new FileWriter(filePath));
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			SimpleDateFormat format = new SimpleDateFormat("dd-M-yyyy hh:mm:ss");	
+			Date curDate = new Date();
+			String DateToStr = format.format(curDate);
+			String type = null;
+			if(test_resistance){
+				type = "Test Resistance Value";
+			}
+			else{
+				type = "Test Temperature Value";
+			}
+			String[] data = {"Date",DateToStr, type, val};
+
+			writer.writeNext(data);			
+			try {
+				writer.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+	}
+	
 	
 	public void leftCalibration(View view){
 		EditText offsetText = (EditText) findViewById(R.id.offset);
