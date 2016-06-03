@@ -1,15 +1,18 @@
 # Imepdance-project
 This is a project design for Logan Liu's Lab project.
-Credit to Chengpeng Hu and Kenny Ren from University of Illinois at Urbana-Champaign.
-The goal of the project is to use Mobile phone to sense the impedance in real-time in order to establish a sensing platform
-to adopt different kind of sensor including temperature, light, thermal, moisture and etc. 
+Credit to Chengpeng Hu, Kenny Ren and Xiangfei Zhou from University of Illinois at Urbana-Champaign.
+The goal of the project is to use Mobile phone to sense the impedance of the DUT so that we can build a impedance sensing platform for various type of sensor.
 
-For more information please contact Chengpeng Hu at hcp199242@gmail.com
+The current source code is the third edition which can sense the resistance and temperature through an internal circuit with swtiches. 
 
-First test version:
+You should consult Kenny's master thesis or Xiangfei Zhou to learn about how the hardware work.
 
-<img src=https://github.com/WuhanMonkey/Imepdance-detector/blob/master/TestImpedance1.png width=400 height=700 />
+Any software question should be directed to Chengpeng Hu. 
 
-Second test version (unfinished):
+For the test impedance application on Android, it has two stages: 1. Calibration stage. 2. Sensing stage.
 
-<img src=https://github.com/WuhanMonkey/Imepdance-detector/blob/master/TestImpedance2.png width=400 height=700 />
+Whenever changing the peripheral settings, you should re-calibrate the internal parameters in the applicaiton. Repeated tests under same settings is not required to re-calibration since the parameters will be memorized by the application. 
+
+If there is no previously calibrated parameters, the application will notify the user to first calibrate left channel as shown below.
+
+
