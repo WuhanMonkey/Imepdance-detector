@@ -15,4 +15,20 @@ Whenever changing the peripheral settings, you should re-calibrate the internal 
 
 If there is no previously calibrated parameters, the application will notify the user to first calibrate left channel as shown below.
 
+<img src=https://github.com/WuhanMonkey/Test-Impedance/blob/master/CaliLeft.png width=400 height=700 />
+
+Press Calibrate button will start calibrating the left channel. 
+
+Then the application will prompt for right channel calibration as shown below.
+
+<img src=https://github.com/WuhanMonkey/Test-Impedance/blob/master/caliRight.png width=400 height=700 />
+
+Then, the system is ready for sensing as shown below. You can choose test resistance or test temperature depends on the switch position in hardware.
+
+<img src=https://github.com/WuhanMonkey/Test-Impedance/blob/master/ready.png width=400 height=700 />
+
+The most recent sensed result is shown as red in the estimated data. 
+
+<img src=https://github.com/WuhanMonkey/Test-Impedance/blob/master/sense.png width=400 height=700 />
+
 
