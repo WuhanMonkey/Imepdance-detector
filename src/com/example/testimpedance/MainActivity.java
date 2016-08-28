@@ -55,6 +55,7 @@ public class MainActivity extends Activity {
 	private AudioRecord recorder = null;
 	private Thread recordingThread = null;
 	private boolean isRecording = false;
+	private boolean alreadyExcuted = false;
 	private double max =0;
 	private double left_max =0;
 	private double right_max =0;
@@ -63,6 +64,7 @@ public class MainActivity extends Activity {
 	private double ohm_offset=0;
 	private double Rint =0;
 	private double K=0;
+	private byte running_amp = 0;
 	private boolean test_resistance_flag = true;
 	private float stereo_frequency =0;
 	int BufferElements2Rec = 1024; // want to play 2048 (2K) since 2 bytes we use only 1024
@@ -93,9 +95,12 @@ public class MainActivity extends Activity {
 		float left_max = sharedpreferences.getFloat("leftMax", 0.0f);
 		float right_max = sharedpreferences.getFloat("rightMax", 0.0f);
 
-
+		EditText offsetText = (EditText) findViewById(R.id.offset);
+		String offset = "10";
+		running_amp = Byte.valueOf(offset);
 		
 		if(left_max != 0.0f && right_max != 0.0f){
+			
 			runOnUiThread(new Runnable() {
                 public void run() {
                 	TextView StatusContent = (TextView) findViewById(R.id.status_content);
@@ -105,7 +110,10 @@ public class MainActivity extends Activity {
 		    				.setText("Calibration done. Please press Test button to start sensing or press Calibrate button to calibrate again");	 
 
                 }
-            });		
+            });	
+			
+			
+			
 		}
 		
 		else if(left_max == 0.0f){
@@ -134,25 +142,7 @@ public class MainActivity extends Activity {
             });		
 		}
 		
-		/**mySwitch = (Switch) findViewById(R.id.mySwitch);
-		
-		  //set the switch to ON 
-		  mySwitch.setChecked(true);
-		  mySwitch.setOnCheckedChangeListener(new OnCheckedChangeListener() {
-			    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-			    	  if(mySwitch.isChecked()){
-						  Log.i("here","nexus");
-						  ohm_coord = 2968750;
-						  ohm_offset = 2850;
-					  }
-					  else {
-						  Log.i("here", "HTC");
-						  ohm_coord = 76819995;
-						  ohm_offset = 1969;
-					  }   // do something, the isChecked will be
-			        // true if the switch is in the On position
-			    }
-			});**/
+
 		   
 		  //check the current state before we display the screen
 		
@@ -177,7 +167,7 @@ public class MainActivity extends Activity {
 		}
 		return super.onOptionsItemSelected(item);
 	}
-	public void calibrate(View view){
+	/**public void calibrate(View view){
 		TextView StatusContent = (TextView) findViewById(R.id.status_content);
 		String status = StatusContent.getText().toString();
 		if(status.equalsIgnoreCase("calibrate left")){
@@ -213,24 +203,85 @@ public class MainActivity extends Activity {
 				}
 			});
 		}
+	}**/
+	public void calibrate(View view){
+		runOnUiThread(new Runnable() {
+			public void run() {					
+				Toast.makeText(getApplicationContext(), "Calibrating the left channel",  Toast.LENGTH_LONG).show();
+			}
+		});
+		
+
+		
+		leftCalibration(view);
+		runOnUiThread(new Runnable() {
+			public void run() {					
+				Toast.makeText(getApplicationContext(), "Calibrating the right channel",  Toast.LENGTH_LONG).show();
+			}
+		});
+		
+		rightCalibration(view);
+		
+		
+		float max = (float) Math.max(left_max,right_max);
+		Log.d("testimpedance", "the left_max is" + left_max);
+		Log.d("testimpedance", "the right_max is" + right_max);
+		Log.d("testimpedance", "the max is" + max);
+		if(max<15000)
+			running_amp = (byte)(10*(int)(15000/max));
+		else
+			running_amp = (byte)((int)(10*15000/max));
+		
+		
+		runOnUiThread(new Runnable() {
+			public void run() {					
+				Toast.makeText(getApplicationContext(), "Amplitude adjusted",  Toast.LENGTH_SHORT).show();
+			}
+		});
+		
+		runOnUiThread(new Runnable() {
+			public void run() {					
+				Toast.makeText(getApplicationContext(), "Calibrating the new left channel",  Toast.LENGTH_LONG).show();
+			}
+		});
+		
+		leftCalibration(view);
+		runOnUiThread(new Runnable() {
+			public void run() {					
+				Toast.makeText(getApplicationContext(), "Calibrating the new right channel",  Toast.LENGTH_LONG).show();
+			}
+		});
+		
+		rightCalibration(view);
+		
+		//Visualize the estimated value depends on test_resistance_flag
+		final TextView resistance_result = (TextView) findViewById(R.id.resistance_result);
+		final double Rx = left_max/right_max*10000;
+		resistance_result.setText("Estimated resistance is: " + (int)Rx + " ohm");
+		resistance_result.setTextColor(Color.RED);
+		Log.d("testimpedance", "the left_max is" + left_max);
+		Log.d("testimpedance", "the right_max is" + right_max);
+		
+		running_amp = (byte)10;
+
+		
+		
 	}
     
 	
 	public void test_resistance(View view){
 		test_resistance_flag = true;
-		start_stereo(view);
+		start_stereo_left(view);
 	}
 	
 	public void test_temperature(View view){
 		test_resistance_flag = false;
-		start_stereo(view);
+		start_stereo_right(view);
 	}
 	
 
-	public void start_stereo(View view){
-		EditText offsetText = (EditText) findViewById(R.id.offset);
-		String offset = offsetText.getText().toString();
-		final byte offset_lf = Byte.valueOf(offset);
+	public void start_stereo_left(View view){
+
 		EditText freqText = (EditText) findViewById(R.id.input_freq);
 		String freq = freqText.getText().toString();
 		stereo_frequency = Float.valueOf(freq);
@@ -272,9 +323,9 @@ public class MainActivity extends Activity {
 	            float increment = (float)(2*Math.PI) * stereo_frequency / samplingRate; // angular increment for each sample
 	            float angle = 0;
 	            //AndroidAudioDevice device = new AndroidAudioDevice( );
-	            AudioDeviceStereoDuo device = new AudioDeviceStereoDuo();
+	            AudioDeviceStereo device = new AudioDeviceStereo();
 	            float samples[] = new float[1024];
-	            device.changeTheOffset(offset_lf);
+	            device.changeTheOffset(running_amp);
 	            
 	            runOnUiThread(new Runnable() {
 					public void run() {
@@ -320,6 +371,8 @@ public class MainActivity extends Activity {
 	            //writeAmplitudeListToFile(sData);
 	            //need to make a toast here for the largest amplitude we get.
 	            max = 0;
+	            int min = 0;
+	            int min_counter = 0;
 	            //low pass filter
 	            //sData_lowpass = noisy_filter(sData,sData_lowpass);
 	            
@@ -333,8 +386,15 @@ public class MainActivity extends Activity {
 	            		max+=sData[i];
 	            		counter++;
 	            	}
+	            	if(sData[i-1]>sData[i] && sData[i]<sData[i+1]){
+	            		min+=sData[i];
+	            		min_counter++;
+	            	}
+	            	
 	            }
 	            max/=counter;
+	            min/=min_counter;
+	            max=max-min;
 	            //put the fit calculation here
 	            
 //	            final double Rx = Rint*K/max - Rint - 2000;
@@ -396,6 +456,183 @@ public class MainActivity extends Activity {
 		
 	}
 	
+	public void start_stereo_right(View view){
+
+		EditText freqText = (EditText) findViewById(R.id.input_freq);
+		String freq = freqText.getText().toString();
+		stereo_frequency = Float.valueOf(freq);
+		sharedpreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
+		float left_max = sharedpreferences.getFloat("leftMax", 0.0f);
+		float right_max = sharedpreferences.getFloat("rightMax", 0.0f);
+	
+		if(left_max == 0.0f || right_max == 0.0f){
+			runOnUiThread(new Runnable() {
+                public void run() {
+            //Toast.makeText(getApplicationContext(), "Estimated resistance is "+ (int)ohm, Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), "Please calibrate the channels first.", Toast.LENGTH_SHORT).show();
+
+                }
+            });
+			return;
+		}		
+		//Rint = (10000*right_max - 2000*left_max)/(left_max-right_max);
+        //K = (right_max*Rint + 10000*right_max)/Rint;
+		Rint = (30000*right_max - 16200*left_max)/(left_max-right_max);
+		K = (right_max*Rint + 30000*right_max)/Rint;
+        runOnUiThread(new Runnable() {
+            public void run() {
+        //Toast.makeText(getApplicationContext(), "Estimated resistance is "+ (int)ohm, Toast.LENGTH_SHORT).show();
+        Toast.makeText(getApplicationContext(), "Retrive Rint: " + Rint +" K: "+ K,  Toast.LENGTH_SHORT).show();
+            }
+        });
+        
+        
+
+		//stereo_frequency = stereo_frequency/2;
+		//Log.d("testimpedance", "offset is : " + Byte.toString(offset_lf));
+		//Log.d("testimpedance", "freq is : " + Float.toString(stereo_frequency));
+		new Thread( new Runnable( ) 
+	      {
+	         public void run( )
+	         {        		
+	            mStop = true;
+	            float increment = (float)(2*Math.PI) * stereo_frequency / samplingRate; // angular increment for each sample
+	            float angle = 0;
+	            //AndroidAudioDevice device = new AndroidAudioDevice( );
+	            AudioDeviceStereoRight device = new AudioDeviceStereoRight();
+	            float samples[] = new float[1024];
+	            device.changeTheOffset(running_amp);
+	            
+	            runOnUiThread(new Runnable() {
+					public void run() {
+						Button handle = null;
+						if(test_resistance_flag){
+						handle = (Button) findViewById(R.id.inner_start_stereo);
+						}
+						else{
+							handle = (Button) findViewById(R.id.inner_start_stereo2);	
+						}
+						handle.setVisibility(View.INVISIBLE);
+						if(test_resistance_flag){
+						handle = (Button) findViewById(R.id.inner_stop_stereo);
+						}
+						else{
+							handle = (Button) findViewById(R.id.inner_stop_stereo2);	
+						}
+						handle.setVisibility(View.VISIBLE);
+						
+				 		TextView StatusContent = (TextView) findViewById(R.id.status_content);
+			    		TextView StatusDetails = (TextView) findViewById(R.id.status_details);
+			    		StatusContent.setText("Sensing");
+			    		StatusDetails
+			    				.setText("System is sensing the sensor under stereo mode...Press stop button when you want to stop this process.");	 
+					}
+				});
+	            StartRecord();
+	            while( mStop )
+	            {
+	               for( int i = 0; i < samples.length; i++ )
+	               {
+	                  samples[i] = (float)Math.sin( angle );
+	                  angle += increment;
+	               }
+	 
+	               device.writeSamples( samples );
+	            }        	
+	            stopRecording();            
+	            device.release();
+	            
+	            
+	            
+	            //writeAmplitudeListToFile(sData);
+	            //need to make a toast here for the largest amplitude we get.
+	            max = 0;
+	            int min = 0;
+	            int min_counter = 0;
+	            //low pass filter
+	            //sData_lowpass = noisy_filter(sData,sData_lowpass);
+	            
+	           /** for(int i =0; i< sData_lowpass.length; i++){
+	            	if(max < Math.abs((int)sData_lowpass[i]))
+	            		max = Math.abs((int)sData_lowpass[i]);            		
+	            }	**/
+	            int counter = 0;
+	            for(int i = 1; i<sData.length-1; i++){
+	            	if(sData[i-1]<sData[i] && sData[i]>sData[i+1]){
+	            		max+=sData[i];
+	            		counter++;
+	            	}
+	            	if(sData[i-1]>sData[i] && sData[i]<sData[i+1]){
+	            		min+=sData[i];
+	            		min_counter++;
+	            	}
+	            	
+	            }
+	            max/=counter;
+	            min/=min_counter;
+	            max=max-min;
+	            //put the fit calculation here
+	            
+//	            final double Rx = Rint*K/max - Rint - 2000;
+//
+//	            runOnUiThread(new Runnable() {
+//	                public void run() {
+//	            Toast.makeText(getApplicationContext(), "Estimated resistance is "+ (int)Rx + " DAC: " + max, Toast.LENGTH_SHORT).show();
+//
+//	                }
+//	            });
+	            
+	            //Visualize the estimated value depends on test_resistance_flag
+	    		final TextView resistance_result = (TextView) findViewById(R.id.resistance_result);
+	    		final TextView temp_result = (TextView) findViewById(R.id.temp_result);
+
+	    		
+	    		if(test_resistance_flag){
+					final double Rx = Rint*K/max - Rint - 15000;
+					runOnUiThread(new Runnable() {
+					     @Override
+					     public void run() {
+
+					//stuff that updates ui
+								resistance_result.setText("Estimated resistance is: " + (int)Rx + " ohm");
+				    			resistance_result.setTextColor(Color.RED);
+				    			temp_result.setTextColor(Color.BLACK);
+					    }
+					});
+
+	    			//TO ADD formula to calculate resistance.
+
+	    			write2CSV(true, Integer.toString((int)Rx) + " ohm");
+	    		}
+	    		else{
+					final double Tem = Rint*K/max - Rint - 15000;
+					final double Tem_c = -1/((Math.log(Tem/10000)/3430)-1/298)-273;
+					runOnUiThread(new Runnable() {
+					     @Override
+					     public void run() {
+
+					//stuff that updates ui
+				    			temp_result.setText("Estimated temperature is: "+ (int)Tem_c + " C");
+				    			temp_result.setTextColor(Color.RED);
+				    			resistance_result.setTextColor(Color.BLACK);
+					    }
+					});
+
+
+	    			//TO ADD formula to calculate temperature.
+	    			write2CSV(false, Integer.toString((int)Tem_c) + " C");
+	    		}
+	            
+	            
+	         }         
+	      } ).start();	
+		
+		
+		
+		
+	}
+	
+	
 	public void write2CSV(boolean test_resistance, String val){
 			String baseDir = android.os.Environment.getExternalStorageDirectory().getAbsolutePath();
 			String fileName = "Measured_data.csv";
@@ -451,15 +688,13 @@ public class MainActivity extends Activity {
 	
 	
 	public void leftCalibration(View view){
-		EditText offsetText = (EditText) findViewById(R.id.offset);
-		String offset = offsetText.getText().toString();
-		final byte offset_lf = Byte.valueOf(offset);
+		Log.d("testimpedance", "the running_amp is" + running_amp);
 		EditText freqText = (EditText) findViewById(R.id.input_freq);
 		String freq = freqText.getText().toString();
 		stereo_frequency = Float.valueOf(freq);
 		sharedpreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
 		final int calibration_time = 5000; //10seconds
-		new Thread( new Runnable( ) 
+		Thread left_cali_thread = new Thread( new Runnable( ) 
 	      {
 	         public void run( )
 	         {        		
@@ -469,7 +704,7 @@ public class MainActivity extends Activity {
 	            //AndroidAudioDevice device = new AndroidAudioDevice( );
 	            AudioDeviceStereo device = new AudioDeviceStereo();
 	            float samples[] = new float[1024];
-	            device.changeTheOffset(offset_lf);
+	            device.changeTheOffset(running_amp);
 	            StartRecord();
 	            long startTime = System.currentTimeMillis(); //fetch starting time
 	            while( (System.currentTimeMillis()-startTime)< calibration_time )
@@ -490,22 +725,34 @@ public class MainActivity extends Activity {
 	            //writeAmplitudeListToFile(sData);
 	            //need to make a toast here for the largest amplitude we get.
 	            max = 0;
+	            int min = 0;
+	            int min_counter = 0;
 	            //low pass filter
-	           /** sData_lowpass = noisy_filter(sData,sData_lowpass);
+	            //sData_lowpass = noisy_filter(sData,sData_lowpass);
 	            
-	            for(int i =0; i< sData_lowpass.length; i++){
+	           /** for(int i =0; i< sData_lowpass.length; i++){
 	            	if(max < Math.abs((int)sData_lowpass[i]))
 	            		max = Math.abs((int)sData_lowpass[i]);            		
-	            }**/
+	            }	**/
 	            int counter = 0;
+	            
 	            for(int i = 1; i<sData.length-1; i++){
+	            	//Log.d("testimpedance", "sData length " + sData[i] + "\n");
 	            	if(sData[i-1]<sData[i] && sData[i]>sData[i+1]){
 	            		max+=sData[i];
 	            		counter++;
 	            	}
+	            	if(sData[i-1]>sData[i] && sData[i]<sData[i+1]){
+	            		min+=sData[i];
+	            		min_counter++;
+	            	}
+	            	
 	            }
-	            max/=counter;
-	          
+	            
+		            max/=counter;
+		            min/=min_counter;
+		            max=max-min;
+	            
 	            
 	            left_max = max;	            
 	            //Rint = (10000*right_max - 2000*left_max)/(left_max-right_max);
@@ -526,22 +773,26 @@ public class MainActivity extends Activity {
 	                }
 	            });
 	         }         
-	      } ).start();
-		
+	      } );
+		  left_cali_thread.start();
+		  try {
+			left_cali_thread.join();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 		
 	}
 	
 	public void rightCalibration(View view){
-		EditText offsetText = (EditText) findViewById(R.id.offset);
-		String offset = offsetText.getText().toString();
-		final byte offset_lf = Byte.valueOf(offset);
+
 		EditText freqText = (EditText) findViewById(R.id.input_freq);
 		String freq = freqText.getText().toString();
 		stereo_frequency = Float.valueOf(freq);
 		sharedpreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
 		final int calibration_time = 5000; //10seconds
-		new Thread( new Runnable( ) 
+		Thread right_cali_thread = new Thread( new Runnable( ) 
 	      {
 	         public void run( )
 	         {        		
@@ -551,7 +802,7 @@ public class MainActivity extends Activity {
 	            //AndroidAudioDevice device = new AndroidAudioDevice( );
 	            AudioDeviceStereoRight adsr = new AudioDeviceStereoRight();
 	            float samples[] = new float[1024];
-	            adsr.changeTheOffset(offset_lf);
+	            adsr.changeTheOffset(running_amp);
 	          
 	            StartRecord();
 	            long startTime = System.currentTimeMillis(); //fetch starting time
@@ -569,25 +820,42 @@ public class MainActivity extends Activity {
 	            adsr.release();
 	         
 	            max = 0;
+	            int min = 0;
+	            int min_counter = 0;
 	            //low pass filter
+	            //sData_lowpass = noisy_filter(sData,sData_lowpass);
+	            
+	           /** for(int i =0; i< sData_lowpass.length; i++){
+	            	if(max < Math.abs((int)sData_lowpass[i]))
+	            		max = Math.abs((int)sData_lowpass[i]);            		
+	            }	**/
 	            int counter = 0;
 	            for(int i = 1; i<sData.length-1; i++){
 	            	if(sData[i-1]<sData[i] && sData[i]>sData[i+1]){
 	            		max+=sData[i];
 	            		counter++;
 	            	}
+	            	if(sData[i-1]>sData[i] && sData[i]<sData[i+1]){
+	            		min+=sData[i];
+	            		min_counter++;
+	            	}
+	            	
 	            }
-	            max/=counter;
-
+	           
+		            max/=counter;
+		            min/=min_counter;
+		            max=max-min;
+	            
 	            right_max = max;
 	            
 	            //Rint = (10000*right_max - 2000*left_max)/(left_max-right_max);
 	            //K = (right_max*Rint + 10000*right_max)/Rint;
 	            SharedPreferences.Editor editor = sharedpreferences.edit();
 	            editor.putFloat("rightMax",(float) right_max);
-	         
-	            editor.commit();
 	            
+	            editor.commit();
+
+
 	            runOnUiThread(new Runnable() {
 	                public void run() {
 	            //Toast.makeText(getApplicationContext(), "Estimated resistance is "+ (int)ohm, Toast.LENGTH_SHORT).show();
@@ -597,14 +865,18 @@ public class MainActivity extends Activity {
 	    		StatusContent.setText("Ready");
 	    		StatusDetails
 	    				.setText("Calibration done. Please press Test button to start sensing or press Calibrate button to calibrate again");	 
-	            
-	            
-	            
-	            
+	    	
 	                }
 	            });
 	         }         
-	      } ).start();
+	      } );
+		right_cali_thread.start();
+		try {
+			right_cali_thread.join();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 		
 		
